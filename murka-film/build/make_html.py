@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from timing import START, DUR, TEXT, VOICE, SCENE, TOTAL, ROOT
 
 W, H = 1080, 1920
-INK = "#3a2c2a"
+INK = "#1d1b2c"
 XF = 0.7  # crossfade length between scenes
 JS = []   # timeline statements
 
@@ -17,7 +17,7 @@ def strip_fill(el):
     return re.sub(r'\sfill="[^"]*"', "", el)
 
 
-def wc(fills, inks=(), sw=3.2, flt="wc"):
+def wc(fills, inks=(), sw=4.2, flt="wc"):
     """Watercolor fill layer + wobbly ink outline layer."""
     f = "".join(fills)
     outline = "".join(strip_fill(e) for e in fills if 'data-noink' not in e)
@@ -32,7 +32,7 @@ def on_planet(cx, cy, r, a):
 
 
 # ---------------------------------------------------------------- characters
-GINGER, CREAM, PINK = "#ee9d57", "#fbe8cd", "#f2a9a2"
+GINGER, CREAM, PINK = "#ef8f4f", "#f7dfbf", "#f2a0a0"
 
 
 def murka(p, look=(0, 0), ears_down=False):
@@ -164,12 +164,18 @@ def planet(p, cx, cy, r, color, seed=1):
         cr = rnd.uniform(0.07, 0.13) * r
         craters.append(f'<ellipse cx="{cx + d*math.cos(a):.0f}" cy="{cy + d*math.sin(a) + 0.15*r:.0f}" rx="{cr:.0f}" ry="{cr*0.7:.0f}" fill="#000" opacity=".1" data-noink="1"/>')
     tufts = []
-    for a in rnd.sample(range(-70, 71, 12), 6):
+    for a in rnd.sample(range(-80, 81, 8), 12):
         rad = math.radians(a)
         x, y = cx + r * math.sin(rad), cy - r * math.cos(rad)
-        tufts.append(f'<path d="M-8,2 L-3,-14 L0,0 L4,-18 L8,2" transform="translate({x:.0f},{y:.0f}) rotate({a})" fill="none" stroke="#4e7a55" stroke-width="3"/>')
+        tufts.append(f'<path d="M-8,2 L-3,-14 L0,0 L4,-18 L8,2" transform="translate({x:.0f},{y:.0f}) rotate({a})" fill="none" stroke="#a6dba8" stroke-width="2.5" opacity=".85"/>')
+    blades = []
+    for _ in range(int(6 + r / 9)):
+        a2 = rnd.uniform(0, 2 * math.pi); d2 = math.sqrt(rnd.random()) * r * 0.88
+        x, y = cx + d2 * math.cos(a2), cy + d2 * math.sin(a2)
+        L = rnd.uniform(0.05, 0.11) * r
+        blades.append(f'<path d="M{x:.0f},{y:.0f} l{rnd.uniform(-2, 3):.1f},{-L:.1f}" stroke="#e8f4ff" stroke-width="{max(1.5, r * 0.012):.1f}" opacity="{rnd.uniform(.25, .5):.2f}" stroke-linecap="round"/>')
     return (f'<g id="{p}">' + wc([f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{color}"/>'] + craters, tufts, sw=3.5)
-            + f'<circle cx="{cx - r*0.3:.0f}" cy="{cy - r*0.35:.0f}" r="{r*0.55:.0f}" fill="#fff" opacity=".12" filter="url(#soft)"/></g>')
+            + "".join(blades) + f'<path d="M{cx - r*0.75:.0f},{cy - r*0.25:.0f} A{r*0.8:.0f},{r*0.8:.0f} 0 0 1 {cx - r*0.15:.0f},{cy - r*0.78:.0f}" fill="none" stroke="#fff" stroke-width="{max(2, r*0.025):.1f}" opacity=".35" stroke-linecap="round"/></g>')
 
 
 def birds(p, n=5):
@@ -181,9 +187,9 @@ def birds(p, n=5):
     return f'<g id="{p}">{"".join(out)}</g>'
 
 
-def star(x, y, s, cls="tw", fill="#f6e3a4"):
-    return (f'<path class="{cls}" transform="translate({x:.0f},{y:.0f}) scale({s:.2f})" '
-            f'd="M0,-10 L2.6,-2.6 L10,0 L2.6,2.6 L0,10 L-2.6,2.6 L-10,0 L-2.6,-2.6 Z" fill="{fill}"/>')
+def star(x, y, s, cls="tw", fill="#fbf8ff"):
+    pts = " ".join(f"{(10 if k % 2 == 0 else 3.6) * math.cos(math.pi * k / 8 - math.pi / 2):.1f},{(10 if k % 2 == 0 else 3.6) * math.sin(math.pi * k / 8 - math.pi / 2):.1f}" for k in range(16))
+    return (f'<polygon class="{cls}" transform="translate({x:.0f},{y:.0f}) scale({s:.2f})" points="{pts}" fill="{fill}" stroke="{INK}" stroke-width="{1.2 / max(s, .5):.1f}"/>')
 
 
 def heart(x, y, s, fill):
@@ -239,8 +245,8 @@ def camera(gid, t0, dur, s0=1.0, s1=1.07, origin="540 1100"):
 
 # ================================================================= S1 intro
 s, d = SCENE["s1"]
-far = [(170, 760, 46, "#b8a3c7"), (900, 690, 58, "#9fc4c1"), (330, 1010, 34, "#d3b48f"),
-       (800, 1000, 40, "#c79c9c"), (110, 1180, 28, "#a7b5d9"), (980, 1230, 30, "#b9cf9f")]
+far = [(170, 760, 46, "#7d6cb3"), (900, 690, 58, "#3f8f8a"), (330, 1010, 34, "#c98a4f"),
+       (800, 1000, 40, "#b8676b"), (110, 1180, 28, "#5a72b8"), (980, 1230, 30, "#5f9a52")]
 farsvg = ""
 for i, (x, y, r, c) in enumerate(far):
     farsvg += (f'<g id="s1-far{i}"><circle id="s1-fg{i}" cx="{x}" cy="{y - r}" r="{r * 2.6}" fill="url(#lampGlow)"/>'
@@ -248,7 +254,7 @@ for i, (x, y, r, c) in enumerate(far):
                + f'<circle id="s1-fl{i}" cx="{x}" cy="{y - r - 6}" r="6" fill="#ffd979"/></g>')
 PL1 = (540, 1520, 300)
 svg = f'''<g id="s1-world">{farsvg}
-{planet("s1-home", *PL1, "#94bba5", seed=1)}
+{planet("s1-home", *PL1, "#3f7d57", seed=1)}
 <g transform="{on_planet(*PL1, 40)}">{lantern("s1-lamp", 1.0, 1.0)}</g>
 <g id="s1-fly"><g transform="{on_planet(*PL1, -6)} scale(0.82)"><g id="s1-hop">{murka("s1-mk", look=(2, -8))}
   <g transform="translate(-40,-470) scale(1.7)"><g id="s1-birds" opacity="0">{birds("s1-b")}</g></g></g></g></g></g>'''
@@ -273,7 +279,7 @@ js(f'tl.fromTo("#s1-fly",{{x:0,y:0}},{{x:260,y:-1500,duration:1.3,ease:"power2.i
 # ================================================================= S2 the scroller
 s, d = SCENE["s2"]
 P2 = (540, 1500, 290)
-svg = f'''<g id="s2-world">{planet("s2-pl", *P2, "#b9a8cc", seed=5)}
+svg = f'''<g id="s2-world">{planet("s2-pl", *P2, "#7d6cb3", seed=5)}
 <g transform="{on_planet(*P2, -48)}">{lantern("s2-lamp", 0.0, 0.9)}</g>
 <g transform="{on_planet(*P2, 16)} scale(1.55)">{man1("s2-man", "scroll")}</g>
 <g transform="{on_planet(*P2, 360 - 24)} scale(0.74)"><g id="s2-arrive">{murka("s2-mk", look=(10, 0))}
@@ -302,7 +308,7 @@ P3 = (540, 1520, 280)
 hearts = ""
 for i, (num, dx) in enumerate([("12", -130), ("47", 110), ("100", -80), ("200", 130)]):
     hearts += f'<g id="s3-h{i}" opacity="0"><g transform="translate({dx},0)">{heart(0, 0, 3.2, "#f07a95")}<text x="44" y="14" class="svgt" font-size="54" fill="#ffd1dc">{num}</text></g></g>'
-svg = f'''<g id="s3-world">{planet("s3-pl", *P3, "#a0c4bf", seed=8)}
+svg = f'''<g id="s3-world">{planet("s3-pl", *P3, "#3f8f8a", seed=8)}
 <g transform="{on_planet(*P3, 46)}">{lantern("s3-lamp", 0.0, 0.9)}</g>
 <g transform="{on_planet(*P3, 8)} scale(1.45)">{man2("s3-man", "selfie")}</g>
 <g transform="{on_planet(*P3, -38)} scale(0.72)">{murka("s3-mk", look=(12, -4))}</g>
@@ -332,7 +338,7 @@ for row in range(5):
         pos.append((x, y))
 for i, (x, y) in enumerate(pos):
     r = rnd.uniform(34, 48)
-    c = rnd.choice(["#b9a8cc", "#a0c4bf", "#c9b18f", "#b4c39a", "#a9b4d6", "#d0a6a6"])
+    c = rnd.choice(["#7d6cb3", "#3f8f8a", "#c98a4f", "#5f9a52", "#5a72b8", "#b8676b"])
     minis += (f'<g id="s4-p{i}" opacity="0">{planet(f"s4-pp{i}", x, y, r, c, seed=30 + i)}'
               f'<circle cx="{x + 8}" cy="{y - r - 20}" r="34" fill="url(#phoneGlow)"/>'
               f'<path d="M{x - 6},{y - r + 1} C{x - 9},{y - r - 20} {x + 8},{y - r - 22} {x + 6},{y - r + 1} Z" fill="#59647f"/>'
@@ -347,7 +353,7 @@ for i in range(6):
 PL4 = (540, 2080, 520)
 svg = f'''<g id="s4-world">{minis}</g>
 <g id="s4-people" opacity="0">{people}</g>
-<g id="s4-sad" opacity="0">{planet("s4-home", *PL4, "#94bba5", seed=1)}
+<g id="s4-sad" opacity="0">{planet("s4-home", *PL4, "#3f7d57", seed=1)}
 <g transform="translate(540,1562) scale(1.4)">{murka("s4-mk", look=(0, 9), ears_down=True)}</g></g>'''
 html = '''<div id="s4-stat" class="stat"><div class="s-big">1 из 6</div><div class="s-mid">людей на Земле одиноки</div><div class="s-src">по данным ВОЗ, 2025</div></div>'''
 section("s4", svg, html)
@@ -373,7 +379,7 @@ js(f'tl.fromTo("#s4-mk-tear",{{opacity:0,y:0}},{{opacity:0.95,y:46,duration:1.6,
 s, d = SCENE["s5"]
 PL5 = (540, 1960, 660)
 spark = "".join(star(780 + 230 * math.cos(a), 1010 + 230 * math.sin(a), 2.2, "s5-sp") for a in [i * 0.9 for i in range(7)])
-svg = f'''<g id="s5-world">{planet("s5-home", *PL5, "#94bba5", seed=1)}
+svg = f'''<g id="s5-world">{planet("s5-home", *PL5, "#3f7d57", seed=1)}
 <g transform="translate(780,1302) scale(2.1)">{lantern("s5-lamp", 0.25, 1.0)}</g>
 <g transform="translate(380,1310) scale(1.25)"><g id="s5-hop">{murka("s5-mk", look=(13, -6))}</g></g>
 <g id="s5-sparks" opacity="0"><g id="s5-spin">{spark}</g></g></g>'''
@@ -420,7 +426,7 @@ bx, by = B[0] + B[2] * math.sin(math.radians(40)), B[1] - B[2] * math.cos(math.r
 path = f"M{ax:.0f},{ay - 160:.0f} Q{(ax + bx) / 2:.0f},{min(ay, by) - 420:.0f} {bx:.0f},{by - 160:.0f}"
 svg = f'''<g id="s7-world">
 <path id="s7-thread" d="{path}" fill="none" stroke="#f4cf6b" stroke-width="5" stroke-linecap="round" stroke-dasharray="1400" stroke-dashoffset="1400" opacity=".9"/>
-{planet("s7-pa", *A, "#b9a8cc", seed=5)}{planet("s7-pb", *B, "#a0c4bf", seed=8)}
+{planet("s7-pa", *A, "#7d6cb3", seed=5)}{planet("s7-pb", *B, "#3f8f8a", seed=8)}
 <g transform="{la}">{lantern("s7-la", 0.0, 0.85)}</g><g transform="{lb}">{lantern("s7-lb", 0.0, 0.85)}</g>
 <g transform="{on_planet(*A, 12)} scale(1.3)">{man1("s7-m1", "up")}</g>
 <g transform="{on_planet(*B, -10)} scale(1.25)">{man2("s7-m2", "wave")}</g></g>'''
@@ -447,13 +453,13 @@ spots = [(150, 1000), (930, 980), (260, 1200), (820, 1210), (120, 820), (960, 80
 for i, (x, y) in enumerate(spots):
     r = rnd.uniform(26, 40)
     skyp += (f'<g><circle id="s8-g{i}" cx="{x}" cy="{y - r}" r="{r * 2.8:.0f}" fill="url(#lampGlow)" opacity="0"/>'
-             + planet(f"s8-p{i}", x, y, r, rnd.choice(["#b9a8cc", "#a0c4bf", "#c9b18f", "#b4c39a", "#a9b4d6"]), seed=50 + i)
+             + planet(f"s8-p{i}", x, y, r, rnd.choice(["#7d6cb3", "#3f8f8a", "#c98a4f", "#5f9a52", "#5a72b8"]), seed=50 + i)
              + f'<circle id="s8-l{i}" cx="{x}" cy="{y - r - 6}" r="6" fill="#ffd979" opacity="0.15"/></g>')
 PL8 = (540, 1950, 520)
 svg = f'''<g id="s8-world">{skyp}
 <path id="s8-cline" d="{cpath}" fill="none" stroke="#f4cf6b" stroke-width="3.5" stroke-dasharray="2600" stroke-dashoffset="2600" opacity=".85"/>
 <g id="s8-cons" opacity="0">{cons}</g>
-{planet("s8-home", *PL8, "#94bba5", seed=1)}
+{planet("s8-home", *PL8, "#3f7d57", seed=1)}
 <g transform="{on_planet(*PL8, 22)}">{lantern("s8-lamp", 1.0, 1.0)}</g>
 <g transform="{on_planet(*PL8, -6)} scale(0.95)">{murka("s8-mk", look=(-2, -10))}</g></g>'''
 html = '''<div id="s8-label" class="c-label">созвездие «Мурка»</div>
@@ -483,7 +489,7 @@ for sid in SCENE:
 
 # ---------------------------------------------------------------- global sky
 rnd = random.Random(99)
-stars = "".join(star(rnd.uniform(20, W - 20), rnd.uniform(20, H * 0.75), rnd.uniform(0.5, 1.4), "tw") for _ in range(70))
+stars = "".join(star(rnd.uniform(20, W - 20), rnd.uniform(20, H * 0.75), rnd.uniform(0.45, 1.0), "tw") for _ in range(46)) + "".join(f'<g><circle cx="{x}" cy="{y}" r="58" fill="none" stroke="#c9c6ff" stroke-width="2" opacity=".45"/>{star(x, y, 3.4, "tw")}</g>' for x, y in [(900, 150), (160, 560)])
 dots = "".join(f'<circle cx="{rnd.uniform(0, W):.0f}" cy="{rnd.uniform(0, H):.0f}" r="{rnd.uniform(1, 2.4):.1f}" fill="#f3e6c4" opacity="{rnd.uniform(.3, .8):.2f}"/>' for _ in range(120))
 blooms = "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{c}" opacity="{o}"/>' for x, y, r, c, o in [
     (200, 380, 380, "#5a5fa8", .45), (900, 760, 420, "#3f7d9a", .35), (300, 1350, 480, "#6a4f8f", .35),
@@ -522,22 +528,16 @@ for fam, w, sub in [("Caveat", 700, "cyrillic"), ("Caveat", 700, "latin"), ("Cav
     FONTS += f'@font-face{{font-family:"{fam}";font-style:normal;font-weight:{w};font-display:block;src:url("fonts/{fam.lower()}-{sub}-{w}-normal.woff2") format("woff2");unicode-range:{rng_};}}\n'
 
 DEFS = f'''<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<filter id="wc" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-  <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="4" result="n"/>
-  <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" result="d"/>
-  <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="9" result="t"/>
-  <feColorMatrix in="t" type="matrix" values="0.55 0 0 0 0.66 0.55 0 0 0 0.66 0.55 0 0 0 0.66 0 0 0 0 1" result="tg"/>
-  <feBlend in="d" in2="tg" mode="multiply" result="m"/>
-  <feComposite in="m" in2="d" operator="in" result="tex"/>
-  <feMorphology in="d" operator="erode" radius="2.5" result="er"/>
-  <feComposite in="d" in2="er" operator="out" result="rim"/>
-  <feColorMatrix in="rim" type="matrix" values="0.72 0 0 0 0 0 0.72 0 0 0 0 0 0.72 0 0 0 0 0 0.85 0" result="rimd"/>
-  <feGaussianBlur in="rimd" stdDeviation="1.1" result="rimb"/>
-  <feMerge><feMergeNode in="tex"/><feMergeNode in="rimb"/></feMerge>
+<filter id="wc" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+  <feTurbulence type="fractalNoise" baseFrequency="0.014 0.42" numOctaves="2" seed="4" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1" result="g"/>
+  <feComponentTransfer in="g" result="g2"><feFuncR type="linear" slope="2.6" intercept="-0.8"/><feFuncG type="linear" slope="2.6" intercept="-0.8"/><feFuncB type="linear" slope="2.6" intercept="-0.8"/></feComponentTransfer>
+  <feComposite in="SourceGraphic" in2="g2" operator="arithmetic" k1="0" k2="1" k3="0.26" k4="-0.13" result="t"/>
+  <feComposite in="t" in2="SourceGraphic" operator="in"/>
 </filter>
 <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
   <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="2" result="n"/>
-  <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
 </filter>
 <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
 <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
@@ -551,7 +551,7 @@ CSS = f'''{FONTS}
 *{{margin:0;padding:0;box-sizing:border-box}}
 html,body{{width:{W}px;height:{H}px;overflow:hidden;background:#1a2550}}
 #root{{position:relative;width:100%;height:100%;overflow:hidden;font-family:"Neucha",serif}}
-#sky{{position:absolute;inset:0;background:linear-gradient(180deg,#141d44 0%,#22306a 45%,#34477f 75%,#475a8c 100%)}}
+#sky{{position:absolute;inset:0;background:#3f3c8a url("assets/sky.png") center/cover no-repeat}}
 .full{{position:absolute;inset:0;width:100%;height:100%;overflow:visible}}
 .scene{{position:absolute;inset:0}}
 .inner{{position:absolute;inset:0}}
@@ -596,9 +596,8 @@ html_doc = f'''<!doctype html>
 {DEFS}
 <div id="root" data-composition-id="main" data-start="0" data-width="{W}" data-height="{H}" data-duration="{TOTAL}">
 <div id="sky" class="clip" data-start="0" data-duration="{TOTAL}" data-track-index="0"><svg class="full" viewBox="0 0 {W} {H}">
-<g filter="url(#bloom)">{blooms}</g>{dots}{stars}</svg></div>
+{stars}</svg></div>
 {chr(10).join(SECTIONS)}
-<img id="paper" class="clip" src="assets/paper.png" alt="" data-start="0" data-duration="{TOTAL}" data-track-index="3" />
 {chr(10).join(subs)}
 <div id="veil" class="clip" data-start="0" data-duration="{TOTAL}" data-track-index="7"></div>
 <audio id="soundtrack" src="assets/soundtrack.wav" data-start="0" data-duration="{TOTAL}" data-track-index="8"></audio>
